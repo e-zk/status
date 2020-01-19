@@ -1,12 +1,8 @@
 package xtitle
 
 import (
-	//"fmt"
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xproto"
-	//"github.com/BurntSushi/xgbutil"
-	//"github.com/BurntSushi/xgbutil/ewmh"
-	//"github.com/BurntSushi/xgbutil/xprop"
 )
 
 /*func List(X *xgbutil.XUtil) (windows []xproto.Window) {
@@ -52,7 +48,6 @@ func GetFocus(X *xgb.Conn) (win xproto.Window, err error) {
 // Print the window name for the given window...
 func GetName(X *xgb.Conn, win xproto.Window) (windowName string, err error) {
 	response := new(xproto.GetPropertyReply)
-	//err = nil
 
 	// get name
 	netWmName := "_NET_WM_NAME"
