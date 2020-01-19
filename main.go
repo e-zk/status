@@ -3,16 +3,13 @@ package main
 import (
 	"fmt"
 	"github.com/BurntSushi/xgb"
-	//"github.com/BurntSushi/xgbutil"
+	"log"
 	"math"
 	"os/exec"
 	"status/conf"
 	"status/xtitle"
 	"time"
 )
-
-//type apm_state int
-//type apm_perfmode int
 
 // Hard-coded default options
 var (
@@ -29,8 +26,6 @@ type BatteryState struct {
 	Percent  int
 	Status   int
 }
-
-type Options map[string]string
 
 var options conf.Options
 
@@ -101,23 +96,19 @@ func main() {
 	// initialise connection to X
 	X, err := xgb.NewConn()
 	if err != nil {
-		fmt.Printf("Error| %s\n", err)
+		log.Fatal(err)
 	}
-
-	// initialise Xutil
-	/*Xutil, err := xgbutil.NewConnXgb(X)
-	if err != nil {
-		fmt.Printf("Error| %s\n", err)
-	}*/
 
 	for {
 		percent := batStat()
 		lockbutton := newBtn("<lock>", "xlock -mode blank")
+
 		title, err := xtitle.Title(X)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
-		fmt.Printf("%%{l}  %s%%{c}[%s]%%{r}<%s>  %s  \n", lockbutton, title, percent, clock())
+
+		fmt.Printf("%%{l}  %s%%{c}[%s]%%{r}<%s>  <%s>  \n", lockbutton, title, percent, clock())
 		time.Sleep(1000 * time.Millisecond)
 
 		/*fmt.Printf("%s %s%s\n", aColor("["), clock(), aColor("]"))
