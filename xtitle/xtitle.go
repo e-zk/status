@@ -27,7 +27,8 @@ import (
 	return windows
 }*/
 
-func GetFocus(X *xgb.Conn) xproto.Window {
+func GetFocus(X *xgb.Conn) (win xproto.Window, err error) {
+
 	setup := xproto.Setup(X)
 	rootId := setup.DefaultScreen(X).Root
 
@@ -35,35 +36,36 @@ func GetFocus(X *xgb.Conn) xproto.Window {
 	activeAtom, err := xproto.InternAtom(X, true, uint16(len(aname)),
 		aname).Reply()
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	reply, err := xproto.GetProperty(X, false, rootId, activeAtom.Atom,
 		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	currentId := xproto.Window(xgb.Get32(reply.Value))
-	return currentId
+	return currentId, nil
 }
 
-func getName(X *xgb.Conn, win xproto.Window) (response *xproto.GetPropertyReply, err error) {
+// Print the window name for the given window...
+func GetName(X *xgb.Conn, win xproto.Window) (windowName string, err error) {
+	response := new(xproto.GetPropertyReply)
+	//err = nil
 
-	err = nil
 	// get name
 	netWmName := "_NET_WM_NAME"
 	netWmAtom, err := xproto.InternAtom(X, true, uint16(len(netWmName)),
 		netWmName).Reply()
 	if err != nil {
-		// TODO error handling
-		panic(err)
+		return "", err
 	}
 
 	response, err = xproto.GetProperty(X, false, win, netWmAtom.Atom,
 		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	// if there is no _NET_WM_NAME, attempt to get WM_NAME instead...
@@ -72,64 +74,38 @@ func getName(X *xgb.Conn, win xproto.Window) (response *xproto.GetPropertyReply,
 		wmNameAtom, err := xproto.InternAtom(X, true, uint16(len(wmName)),
 			wmName).Reply()
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 
 		response, err = xproto.GetProperty(X, false, win, wmNameAtom.Atom,
 			xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 
 		if response.Length == 0 {
 			response = new(xproto.GetPropertyReply)
 		}
 	}
-	return
+	return string(response.Value), nil
 }
 
-func Title(X *xgb.Conn) string {
-	// initialise connection to X
-	/*X, err := xgb.NewConn()
-	if err != nil {
-		fmt.Printf("Error| %s\n", err)
-	}
-
-	// initialise Xutil
-	Xutil, err := xgbutil.NewConnXgb(X)
-	if err != nil {
-		fmt.Printf("Error| %s\n", err)
-	}*/
+// Get the title of the currently focused window
+func Title(X *xgb.Conn) (name string, err error) {
 
 	// get the current window, and then use that
 	// to get it's name
-	currentId := GetFocus(X)
-	name := getName(X, currentId).Value
 
-	return string(name)
+	currentId, err := GetFocus(X)
+	if err != nil {
+		return
+	}
+
+	name, err = GetName(X, currentId)
+	if err != nil {
+		return
+	}
+
+	// return the value of name
+	return name, nil
 }
-
-/*
-func main() {
-	// initialise connection to X
-	X, err := xgb.NewConn()
-	if err != nil {
-		fmt.Printf("Error| %s\n", err)
-	}
-
-	// initialise Xutil
-	Xutil, err := xgbutil.NewConnXgb(X)
-	if err != nil {
-		fmt.Printf("Error| %s\n", err)
-	}
-
-	// scan in wid from the last arg
-	//fmt.Sscanf(os.Args[len(os.Args)-1], "0x%x", &wid)
-
-	//
-	currentId := getFocus(X)
-	name := getName(Xutil, currentId).Value
-
-	//
-	fmt.Printf("%s\n", name)
-}*/
