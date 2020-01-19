@@ -1,4 +1,4 @@
-package xtitle
+package xorg
 
 import (
 	"github.com/BurntSushi/xgb"
