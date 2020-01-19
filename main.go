@@ -7,7 +7,7 @@ import (
 	"math"
 	"os/exec"
 	"status/conf"
-	"status/xtitle"
+	"status/xorg"
 	"time"
 )
 
@@ -103,12 +103,24 @@ func main() {
 		percent := batStat()
 		lockbutton := newBtn("<lock>", "xlock -mode blank")
 
-		title, err := xtitle.Title(X)
+		title, err := xorg.Title(X)
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		// for debugging xorg.List()
+		/* windows, err := xorg.List(X)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for index, win := range windows {
+			fmt.Printf("[%d]\t%#08x\n", index, win)
+		}*/
+
+		// print the status line
 		fmt.Printf("%%{l}  %s%%{c}[%s]%%{r}<%s>  <%s>  \n", lockbutton, title, percent, clock())
+		// wait a sec...
 		time.Sleep(1000 * time.Millisecond)
 
 		/*fmt.Printf("%s %s%s\n", aColor("["), clock(), aColor("]"))
