@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"status/conf"
 	"status/xtitle"
-	t "time"
+	"time"
 )
 
 //type apm_state int
@@ -87,7 +87,7 @@ func batStat() string {
 }
 
 func clock() string {
-	dt := t.Now()
+	dt := time.Now()
 	return dt.Format("1504")
 }
 
@@ -113,9 +113,12 @@ func main() {
 	for {
 		percent := batStat()
 		lockbutton := newBtn("<lock>", "xlock -mode blank")
-		title := xtitle.Title(X)
-		fmt.Printf("%%{l}  %s%%{c}[%s]%%{r}%s  %s  \n", lockbutton, title, percent, clock())
-		t.Sleep(1000 * t.Millisecond)
+		title, err := xtitle.Title(X)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%%{l}  %s%%{c}[%s]%%{r}<%s>  %s  \n", lockbutton, title, percent, clock())
+		time.Sleep(1000 * time.Millisecond)
 
 		/*fmt.Printf("%s %s%s\n", aColor("["), clock(), aColor("]"))
 		t.Sleep(500 * t.Millisecond)*/
