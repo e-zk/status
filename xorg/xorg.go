@@ -1,6 +1,7 @@
 package xorg
 
 import (
+	//"fmt"
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xproto"
 )
@@ -23,19 +24,59 @@ import (
 	return windows
 }*/
 
+// List all X clients (windows)
+func List(X *xgb.Conn) (windows []xproto.Window, err error) {
+	// get root window
+	setup := xproto.Setup(X)
+	rootWin := setup.DefaultScreen(X).Root
+
+	clientListName := "_NET_CLIENT_LIST"
+	clientListAtom, err := xproto.InternAtom(X, true, uint16(len(clientListName)),
+		clientListName).Reply()
+	if err != nil {
+		return windows, err
+	}
+
+	// TODO fix this
+
+	var i int
+	for {
+		// get a new cookie, using an incrementing offset (`uint32(i)`)
+		cookie := xproto.GetProperty(X, false, rootWin, clientListAtom.Atom,
+			xproto.GetPropertyTypeAny, uint32(i), (1<<32)-1)
+		reply, err := cookie.Reply()
+		if err != nil {
+			return windows, err
+		}
+
+		// if the valuelen is 0, then we don't need to add anymore windows
+		// break out of the infinite loop
+		if reply.ValueLen == 0 {
+			break
+		}
+
+		// add the window
+		windows = append(windows, xproto.Window(xgb.Get32(reply.Value)))
+		i++
+	}
+
+	return windows, nil
+}
+
+// Get the currently focused window
 func GetFocus(X *xgb.Conn) (win xproto.Window, err error) {
 
 	setup := xproto.Setup(X)
 	rootId := setup.DefaultScreen(X).Root
 
-	aname := "_NET_ACTIVE_WINDOW"
-	activeAtom, err := xproto.InternAtom(X, true, uint16(len(aname)),
-		aname).Reply()
+	activeWinName := "_NET_ACTIVE_WINDOW"
+	activeWinAtom, err := xproto.InternAtom(X, true, uint16(len(activeWinName)),
+		activeWinName).Reply()
 	if err != nil {
 		return
 	}
 
-	reply, err := xproto.GetProperty(X, false, rootId, activeAtom.Atom,
+	reply, err := xproto.GetProperty(X, false, rootId, activeWinAtom.Atom,
 		xproto.GetPropertyTypeAny, 0, (1<<32)-1).Reply()
 	if err != nil {
 		return
