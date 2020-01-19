@@ -38,9 +38,8 @@ func List(X *xgb.Conn) (windows []xproto.Window, err error) {
 	}
 
 	// TODO fix this
-
-	var i int
-	for {
+	var i uint32
+	for i = 0; ; i++ {
 		// get a new cookie, using an incrementing offset (`uint32(i)`)
 		cookie := xproto.GetProperty(X, false, rootWin, clientListAtom.Atom,
 			xproto.GetPropertyTypeAny, uint32(i), (1<<32)-1)
